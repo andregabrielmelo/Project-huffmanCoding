@@ -13,7 +13,7 @@ struct nodeArvore {
 
 /** Definição da fila de prioridade (implementada como lista simplesmente encadeada) */
 struct nodeLista {
-    nodeArvore *nodeArvore;
+    nodeArvore *noArvore;
     struct nodeLista *proximo;
 };
 
@@ -40,7 +40,7 @@ nodeLista *novoNodeLista(nodeArvore *node)
     nodeLista *novo = new nodeLista;
 
     // Adiciona a árvore ao nó
-    novo->nodeArvore = node;
+    novo->noArvore = node;
 
     // Faz o campo próximo apontar para NULL
     novo->proximo = NULL;
@@ -67,13 +67,13 @@ nodeArvore *pegarNodeArvore(Lista *lista, char letra) {
     nodeLista *aux = lista->inicio;
 
     // Laço que percorre a lista e insere o nó na posição certa de acordo até achar o nó com aquela letra
-    while (aux != nullptr && aux->nodeArvore->letra != letra) {
+    while (aux != nullptr && aux->noArvore->letra != letra) {
         aux = aux->proximo;
     }    
 
     // Se foi encontrado uma node com aquela letra, retorna o nó 
     if (aux != nullptr) {
-        return aux->nodeArvore;
+        return aux->noArvore;
     }   
 
     return nullptr;
@@ -87,7 +87,7 @@ void mostrarLista(Lista *lista) {
     while (aux != nullptr) {
 
         // Mostra o elemnto (letra:frequencia)
-        std::cout << aux->nodeArvore->letra << ":" << aux->nodeArvore->frequencia;
+        std::cout << aux->noArvore->letra << ":" << aux->noArvore->frequencia;
 
         if (aux->proximo != nullptr) {
             std::cout << "->";
@@ -109,7 +109,7 @@ void insereLista(Lista *lista, nodeLista *node)  {
 
     // Se o campo 'frequência' do 'nó' parâmetro for menor que o campo 'frequência' do primeiro item (head)
     // da lista, incluir o novo nó como inicio da lisa, e colocar o inicio antigo como next desse novo
-    else if (node->nodeArvore->frequencia < lista->inicio->nodeArvore->frequencia)
+    else if (node->noArvore->frequencia < lista->inicio->noArvore->frequencia)
     {
         node->proximo = lista->inicio;
         lista->inicio = node;
@@ -127,7 +127,7 @@ void insereLista(Lista *lista, nodeLista *node)  {
         // Sendo assim, os ponteiros seguirão mudando de posição enquanto aux não for o fim da lista,
         // e enquanto a frequência do nó apontado por aux for menor ou igual a frequência do 'nó' parâmetro.
 
-        while (aux != nullptr && aux->nodeArvore->frequencia <= node->nodeArvore->frequencia) {
+        while (aux != nullptr && aux->noArvore->frequencia <= node->noArvore->frequencia) {
             aux_anterior = aux;
             aux = aux->proximo;
         }
@@ -149,7 +149,7 @@ nodeArvore *popMinLista(Lista *lista) {
     nodeLista *aux = lista->inicio;
 
     // Ponteiro auxiliar que aponta para a árvore contida em aux (árvore do primeiro nó da lista)
-    nodeArvore *aux_arvore = aux->nodeArvore;
+    nodeArvore *aux_arvore = aux->noArvore;
 
     // Aponta o 'head' da lista para o segundo elemento dela
     lista->inicio = aux->proximo;
@@ -191,6 +191,29 @@ Lista *novoHuffmanList(std::string texto) {
     }
 
     return lista;
+}
+
+void organizarHuffmanLista(Lista *lista) {
+    // nó auxiliar que inicia apontando para o primeiro nó da lista 
+    nodeLista *aux = lista->inicio;
+
+    // nó temporario para guaradar nó
+    nodeLista *temp_node = novoNodeLista(nullptr);
+
+    // Laço que percorre a lista e mostra os elementos
+    while (aux != lista->fim) {
+
+        // Se esse elemento tem uma frequencia maior que o próximo
+        // troque eles de lugar
+        if (aux->proximo != nullptr && aux->noArvore->frequencia > aux->proximo->noArvore->frequencia) {
+            temp_node = aux;
+            aux = aux->proximo;
+            aux->proximo = temp_node;
+        }
+
+        // Vai para o próximo elemento da lista
+        aux = aux->proximo;
+    }   
 }
 
 
