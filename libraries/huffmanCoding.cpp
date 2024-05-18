@@ -144,6 +144,10 @@ void insereLista(Lista *lista, nodeLista *node)  {
 */
 
 nodeArvore *popMinLista(Lista *lista) {
+    // Verfiicar se a lista é valida
+    if (lista->inicio == nullptr) {
+        return nullptr;
+    }
 
     // Ponteiro auxilar que aponta para o primeiro nó da lista
     nodeLista *aux = lista->inicio;
@@ -155,8 +159,7 @@ nodeArvore *popMinLista(Lista *lista) {
     lista->inicio = aux->proximo;
 
     // Libera o ponteiro aux
-    free(aux);
-    aux = NULL;
+    delete aux;
 
     return aux_arvore;
 }
@@ -194,169 +197,119 @@ Lista *novoHuffmanList(std::string texto) {
 }
 
 void organizarHuffmanLista(Lista *lista) {
-    // nó auxiliar que inicia apontando para o primeiro nó da lista 
-    nodeLista *aux = lista->inicio;
+    if (lista->inicio == nullptr || lista->inicio->proximo == nullptr) {
+        return;
+    }
 
-    // nó temporario para guaradar nó
-    nodeLista *temp_node = novoNodeLista(nullptr);
+    nodeLista *sorted = nullptr; // Lista temporária para nós ordenados
+    nodeLista *current = lista->inicio;
 
-    // Laço que percorre a lista e mostra os elementos
-    while (aux != lista->fim) {
-
-        // Se esse elemento tem uma frequencia maior que o próximo
-        // troque eles de lugar
-        if (aux->proximo != nullptr && aux->noArvore->frequencia > aux->proximo->noArvore->frequencia) {
-            temp_node = aux;
-            aux = aux->proximo;
-            aux->proximo = temp_node;
+    while (current != nullptr) {
+        nodeLista *next = current->proximo; // Armazena o próximo nó
+        // Insere current na lista ordenada
+        if (sorted == nullptr || sorted->noArvore->frequencia >= current->noArvore->frequencia) {
+            current->proximo = sorted;
+            sorted = current;
+        } else {
+            nodeLista *sortedCurrent = sorted;
+            while (sortedCurrent->proximo != nullptr && sortedCurrent->proximo->noArvore->frequencia < current->noArvore->frequencia) {
+                sortedCurrent = sortedCurrent->proximo;
+            }
+            current->proximo = sortedCurrent->proximo;
+            sortedCurrent->proximo = current;
         }
+        current = next;
+    }
 
-        // Vai para o próximo elemento da lista
-        aux = aux->proximo;
-    }   
+    lista->inicio = sorted; // Atualiza o início da lista com a lista ordenada
 }
 
+nodeArvore *criarArvoreHuffman(Lista *lista) {
+    // Enquanto houver mais de um nó na lista
+    while (lista->inicio != nullptr && lista->inicio->proximo != nullptr) {
+        // Pega os dois nós de menor frequência
+        nodeArvore *esquerda = popMinLista(lista);
+        nodeArvore *direita = popMinLista(lista);
 
-// struct huffmanItem {
-//     char character = NULL; // guarda a letra
-//     int frequency = NULL; // guarda a frquência com que ela aparece
-// };
+        // Verificar as frequências dos nós removidos
+        if (esquerda == nullptr || direita == nullptr) {
+            std::cerr << "Erro: nós removidos são nulos!" << std::endl;
+            return nullptr;
+        }
 
-// template <typename T>
-// bool inserir(List <T> *list, T value) {
-//     // Cria uma nova node
-//     Node <T> *new_node = new Node <T>;
+        // Cria um novo nó com a soma das frequências dos dois nós
+        nodeArvore *novo = novoNodeArvore(NULL, esquerda->frequencia + direita->frequencia, esquerda, direita);
 
-//     // Verifica se a memÃ³ria foi alocada corretamente
-//     if (new_node == nullptr) {
-//         std::cout << "\nNÃ£o hÃ¡ memÃ³ria suficiente para um novo nÃ³.";
-//         return false;
-//     }
+        // Cria um novo nó de lista com o nó criado
+        nodeLista *novo_nodeLista = novoNodeLista(novo);
 
-//     // Atribui os valores ao novo Node
-//     new_node->value = value;
-//     new_node->next_element = nullptr;
+        // Insere o nó na lista
+        insereLista(lista, novo_nodeLista);
+    }
+
+    // Retorna o nó restante na lista
+    return popMinLista(lista);
+}
+
+void mostrarArvoreHuffman(nodeArvore *raiz, int depth=0) {
+    // Verificar se é um nó valido
+    if (raiz == nullptr) {
+        return;
+    }
     
-//     // Se a lista estÃ¡ vazia
-//     if (list->beginning == nullptr && list->ending == nullptr) {
-//         // A nova Node Ã© o inicio e o fim
-//         list->beginning = new_node;
-//         list->ending = new_node;
-        
-//         return true;
-//     }
+    // Print the current nodeTree with appropriate indentation
+    for (int i = 0; i < depth; ++i) {
+        std::cout << "    ";
+    }
+    std::cout << "  |---"; // Assuming 2 spaces for indentation
     
-//     // Se hÃ¡ um unico elemento
-//     if (list->beginning == list->ending) {
-//         // Adiciona o prÃ³ximo elemento do unico atualmente da lista
-//         list->beginning->next_element = new_node;
+    // Verifique se a letra existe
+    if (raiz->letra != NULL) {
+        std::cout << raiz->letra << ":" << raiz->frequencia << "\n";
+    } else {
+        std::cout << ":" << raiz->frequencia << "\n";
+    }
 
-//         // O Ãºltimo elemento da lista Ã© o mais recente
-//         list->ending = new_node;
+    // Recursively call the function for left and right subtrees with increased depth
+    mostrarArvoreHuffman(raiz->esquerda, (depth + 1));
+    mostrarArvoreHuffman(raiz->direita, (depth + 1));
+}
 
-//         return true;
-//     }
-    
-//     // Adicione new_node como o prÃ³ximo elemento do atual Ãºltimo elemento da lista
-//     list->ending->next_element = new_node;
-    
-//     // O new_node Ã© o novo Ãºltimo elemento da lista
-//     list->ending = new_node;
+// Tabela
+// a:2 0
+// b:3 01
+void tabelaHuffman(nodeArvore *raiz, std::string code="") {
+    // Verificar se é um nó valido
+    if (raiz == nullptr) {
+        return;
+    }
 
-//     return true;
+    // Se é uma folha, guarda a letra e frequência
+    if (raiz->esquerda == nullptr && raiz->direita == nullptr) {
+        std::cout << raiz->letra << ", " << raiz->frequencia << ", " << code << "\n";
+    }
+
+    tabelaHuffman(raiz->esquerda, code + "0");
+    tabelaHuffman(raiz->direita, code + "1");
+}
+
+// Testes
+// int main() {
+//     Lista *lista = novaLista(nullptr, nullptr);
+
+//     // Adiciona nós com frequências conhecidas
+//     insereLista(lista, novoNodeLista(novoNodeArvore('a', 5, nullptr, nullptr)));
+//     insereLista(lista, novoNodeLista(novoNodeArvore('b', 9, nullptr, nullptr)));
+//     insereLista(lista, novoNodeLista(novoNodeArvore('c', 12, nullptr, nullptr)));
+//     insereLista(lista, novoNodeLista(novoNodeArvore('d', 13, nullptr, nullptr)));
+//     insereLista(lista, novoNodeLista(novoNodeArvore('e', 16, nullptr, nullptr)));
+//     insereLista(lista, novoNodeLista(novoNodeArvore('f', 45, nullptr, nullptr)));
+
+//     // Cria a árvore de Huffman
+//     nodeArvore *arvore = criarArvoreHuffman(lista);
+
+//     // Mostra a árvore de Huffman
+//     mostrarArvoreHuffman(arvore);
+
+//     return 0;
 // }
-
-// bool pesquisarHuffman(List <huffmanItem> *list, char value) {
-//     // Cria uma nova node para percorrer a lista
-//     Node <huffmanItem> *temp_node = new Node <huffmanItem>;
-
-//     // Aponta a node para o inicio da lista
-//     temp_node = list->beginning;
-
-//     // Percorra a lista atÃ© achar o elemnto ou chegar no fim dela
-//     while (temp_node != nullptr && value != temp_node->value.character) {
-//         // VÃ¡ para o prÃ³ximo elemento da lista
-//         temp_node = temp_node->next_element;
-//     }
-
-//     // Se o valor foi encontrado
-//     if (temp_node != nullptr) {
-//         return true;
-//     }
-
-//     return false;
-// }
-
-// Node <huffmanItem> *getHuffmanItem(List <huffmanItem> *list, char value){
-//     // Cria uma nova node para percorrer a lista
-//     Node <huffmanItem> *temp_node = new Node <huffmanItem>;
-
-//     // Aponta a node para o inicio da lista
-//     temp_node = list->beginning;
-
-//     // Percorra a lista atÃ© achar o elemnto ou chegar no fim dela
-//     while (temp_node != nullptr && value != temp_node->value.character) {
-//         // VÃ¡ para o prÃ³ximo elemento da lista
-//         temp_node = temp_node->next_element;
-//     }
-
-//     // Se o valor foi encontrado
-//     if (temp_node != nullptr) {
-//         return temp_node;
-//     }
-
-//     return nullptr;
-// }
-
-// template <typename T>
-// List <T>* trafomarHuffmanLista(std::string text) {
-//     // Cria lista
-//     List *lista_huffman = new List<huffmanItem>;
-//     inicializar_lista(lista_huffman);
-
-//     // Temp huffmanItem node
-//     Node <huffmanItem> *temp_huffman_item = new Node <huffmanItem>;
-
-//     // Percorre o texto
-//     for (int i = 0; i < text.length; i++) {
-//         if(pesquisarHuffman(lista_huffman, text[i])) { // se o elemnto já está na lista
-//             temp_huffman_item = getHuffmanItem(lista_huffman, text[i]); // pega o elemento
-//             temp_huffman_item->value.frequency++; // aumenta seu contador
-//         } else {
-//             // Cria uma nova node
-//             Node <huffmanItem> *temp_node = new Node <huffmanItem>;
-//             temp_node->value.character = text[i];
-//             temp_node->value.frequency++;
-
-//             // Adiciona na lista de forma ordenada, baseado na frequencia
-//         }
-//     }
-// }
-
-// std::string lerArquivo() {
-//     std::ifstream file;
-
-//     std::string file_name;
-//     std::cout << "\nNome do arquivo: ";
-//     std::cin >> file_name;
-
-//     file.open(file_name); // abre arquivo 
-//     std::string line;
-
-//     std::string texto = "";
-//     while (getline(file, line)){
-//         texto += line;
-//     }
-
-//     return texto;
-// }
-
-// std::string lerEntrada() {
-//     std::string texto;
-//     std::cout << "\nTexto: ";
-//     std::cin >> texto;
-
-//     return texto;
-// }
-
-
