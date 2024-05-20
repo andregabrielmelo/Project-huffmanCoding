@@ -1,3 +1,6 @@
+// Alunos: André Melo, Gabriel Mafra
+// Link github: 
+
 #include <stdlib.h>
 #include <locale.h>
 #include <string> 
