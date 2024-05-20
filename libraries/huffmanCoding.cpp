@@ -85,7 +85,6 @@ void mostrarLista(Lista *lista) {
 
     // Laço que percorre a lista e mostra os elementos
     while (aux != nullptr) {
-
         // Mostra o elemnto (letra:frequencia)
         std::cout << aux->noArvore->letra << ":" << aux->noArvore->frequencia;
 
@@ -98,19 +97,18 @@ void mostrarLista(Lista *lista) {
     }    
 }
 
-// template aqui?
 // Inserir de forma ordenada
 void insereLista(Lista *lista, nodeLista *node)  {
     // Se a lista passada como parâmetro não tem um nó no início (vazia), insira o nó no início
-    if (!lista->inicio)
+    if (lista->inicio == nullptr) 
     {
         lista->inicio = node;
+        lista->fim = node;
     }
 
     // Se o campo 'frequência' do 'nó' parâmetro for menor que o campo 'frequência' do primeiro item (head)
     // da lista, incluir o novo nó como inicio da lisa, e colocar o inicio antigo como next desse novo
-    else if (node->noArvore->frequencia < lista->inicio->noArvore->frequencia)
-    {
+    else if (node->noArvore->frequencia < lista->inicio->noArvore->frequencia) {
         node->proximo = lista->inicio;
         lista->inicio = node;
     }
@@ -137,11 +135,6 @@ void insereLista(Lista *lista, nodeLista *node)  {
         node->proximo = aux;
     }
 }
-
-/** Função que 'solta' o nó apontado por 'head' da lista (o de menor frequência)
-* (faz backup do nó e o desconecta da lista)
-* @param: uma lista encadeada.
-*/
 
 nodeArvore *popMinLista(Lista *lista) {
     // Verfiicar se a lista é valida
@@ -192,36 +185,36 @@ Lista *novoHuffmanList(std::string texto) {
             temp_node->frequencia++;
         }
     }
-
     return lista;
 }
 
 void organizarHuffmanLista(Lista *lista) {
+    // Verifica se a lista é válida, verifica se não é uma lista unica
     if (lista->inicio == nullptr || lista->inicio->proximo == nullptr) {
         return;
     }
 
-    nodeLista *sorted = nullptr; // Lista temporária para nós ordenados
+    nodeLista *novo_inicio = nullptr; // Lista temporária para nós ordenados
     nodeLista *current = lista->inicio;
 
+    // Percorre a lista, até zerar a lista (current == nullptr)
     while (current != nullptr) {
         nodeLista *next = current->proximo; // Armazena o próximo nó
         // Insere current na lista ordenada
-        if (sorted == nullptr || sorted->noArvore->frequencia >= current->noArvore->frequencia) {
-            current->proximo = sorted;
-            sorted = current;
-        } else {
-            nodeLista *sortedCurrent = sorted;
-            while (sortedCurrent->proximo != nullptr && sortedCurrent->proximo->noArvore->frequencia < current->noArvore->frequencia) {
-                sortedCurrent = sortedCurrent->proximo;
+        if (novo_inicio == nullptr || novo_inicio->noArvore->frequencia >= current->noArvore->frequencia) {
+            current->proximo = novo_inicio;
+            novo_inicio = current;
+        } else { 
+            nodeLista *inicioAtual = novo_inicio;
+            while (inicioAtual->proximo != nullptr && inicioAtual->proximo->noArvore->frequencia < current->noArvore->frequencia) {
+                inicioAtual = inicioAtual->proximo;
             }
-            current->proximo = sortedCurrent->proximo;
-            sortedCurrent->proximo = current;
+            current->proximo = inicioAtual->proximo;
+            inicioAtual->proximo = current;
         }
         current = next;
     }
-
-    lista->inicio = sorted; // Atualiza o início da lista com a lista ordenada
+    lista->inicio = novo_inicio; // Atualiza o início da lista com a lista ordenada
 }
 
 nodeArvore *criarArvoreHuffman(Lista *lista) {
@@ -233,7 +226,7 @@ nodeArvore *criarArvoreHuffman(Lista *lista) {
 
         // Verificar as frequências dos nós removidos
         if (esquerda == nullptr || direita == nullptr) {
-            std::cerr << "Erro: nós removidos são nulos!" << std::endl;
+            std::cout << "Erro: nós removidos são nulos!" << std::endl;
             return nullptr;
         }
 
@@ -251,14 +244,14 @@ nodeArvore *criarArvoreHuffman(Lista *lista) {
     return popMinLista(lista);
 }
 
-void mostrarArvoreHuffman(nodeArvore *raiz, int depth=0) {
+void mostrarArvoreHuffman(nodeArvore *raiz, int profundidade=0) {
     // Verificar se é um nó valido
     if (raiz == nullptr) {
         return;
     }
     
     // Print the current nodeTree with appropriate indentation
-    for (int i = 0; i < depth; ++i) {
+    for (int i = 0; i < profundidade; ++i) {
         std::cout << "    ";
     }
     std::cout << "  |---"; // Assuming 2 spaces for indentation
@@ -270,46 +263,23 @@ void mostrarArvoreHuffman(nodeArvore *raiz, int depth=0) {
         std::cout << ":" << raiz->frequencia << "\n";
     }
 
-    // Recursively call the function for left and right subtrees with increased depth
-    mostrarArvoreHuffman(raiz->esquerda, (depth + 1));
-    mostrarArvoreHuffman(raiz->direita, (depth + 1));
+    // Recursively call the function for left and right subtrees with increased profundidade
+    mostrarArvoreHuffman(raiz->esquerda, (profundidade + 1));
+    mostrarArvoreHuffman(raiz->direita, (profundidade + 1));
 }
 
-// Tabela
-// a:2 0
-// b:3 01
-void tabelaHuffman(nodeArvore *raiz, std::string code="") {
+// Tabela de Huffman
+void tabelaHuffman(nodeArvore *raiz, std::string codigo="") {
     // Verificar se é um nó valido
     if (raiz == nullptr) {
         return;
     }
 
-    // Se é uma folha, guarda a letra e frequência
+    // Se é uma folha, imprime a letra e frequência
     if (raiz->esquerda == nullptr && raiz->direita == nullptr) {
-        std::cout << raiz->letra << ", " << raiz->frequencia << ", " << code << "\n";
+        std::cout << raiz->letra << ", " << raiz->frequencia << ", " << codigo << "\n";
     }
 
-    tabelaHuffman(raiz->esquerda, code + "0");
-    tabelaHuffman(raiz->direita, code + "1");
+    tabelaHuffman(raiz->esquerda, codigo + "0");
+    tabelaHuffman(raiz->direita, codigo + "1");
 }
-
-// Testes
-// int main() {
-//     Lista *lista = novaLista(nullptr, nullptr);
-
-//     // Adiciona nós com frequências conhecidas
-//     insereLista(lista, novoNodeLista(novoNodeArvore('a', 5, nullptr, nullptr)));
-//     insereLista(lista, novoNodeLista(novoNodeArvore('b', 9, nullptr, nullptr)));
-//     insereLista(lista, novoNodeLista(novoNodeArvore('c', 12, nullptr, nullptr)));
-//     insereLista(lista, novoNodeLista(novoNodeArvore('d', 13, nullptr, nullptr)));
-//     insereLista(lista, novoNodeLista(novoNodeArvore('e', 16, nullptr, nullptr)));
-//     insereLista(lista, novoNodeLista(novoNodeArvore('f', 45, nullptr, nullptr)));
-
-//     // Cria a árvore de Huffman
-//     nodeArvore *arvore = criarArvoreHuffman(lista);
-
-//     // Mostra a árvore de Huffman
-//     mostrarArvoreHuffman(arvore);
-
-//     return 0;
-// }

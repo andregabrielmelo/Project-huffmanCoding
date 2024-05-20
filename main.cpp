@@ -1,11 +1,10 @@
 #include <stdlib.h>
 #include <locale.h>
-#include <string> // Add this line to include the string type
-#include <fstream> // Add this line to include the ifstream type
+#include <string> 
+#include <fstream> 
 #include <iostream>
+#include <limits>
 
-#include "libraries/nodes.cpp"
-#include "libraries/arvores.cpp"
 #include "libraries/huffmanCoding.cpp"
 
 using namespace std;
@@ -61,7 +60,7 @@ int main() {
         // Mostar texto
         cout << texto << "\n";
 
-        // Criação da arvore de Huffman
+        // Criação da lista de Huffman
         Lista *huffmanList = novoHuffmanList(texto);
 
         // Mostrar a lista de Huffman 
