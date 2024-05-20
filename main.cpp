@@ -1,5 +1,5 @@
 // Alunos: André Melo, Gabriel Mafra
-// Link github: 
+// Link github: https://github.com/andregabrielmelo/Project-huffmanCoding/
 
 #include <stdlib.h>
 #include <locale.h>
