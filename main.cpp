@@ -61,7 +61,7 @@ int main() {
         }
 
         // Mostar texto
-        cout << texto << "\n";
+        cout << "\nTexto lido: " << texto << "\n";
 
         // Criação da lista de Huffman
         Lista *huffmanList = novoHuffmanList(texto);
@@ -95,6 +95,9 @@ int main() {
 
         // Pausar
         pause();
+
+        // Liberar arvore 
+        liberarArvore(huffmanTree);
     }
 }
 

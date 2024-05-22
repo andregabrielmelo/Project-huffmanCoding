@@ -188,7 +188,7 @@ Lista *novoHuffmanList(std::string texto) {
     return lista;
 }
 
-void organizarHuffmanLista(Lista *lista) {
+void organizarHuffmanLista(Lista *lista) { // mudar?
     // Verifica se a lista é válida, verifica se não é uma lista unica
     if (lista->inicio == nullptr || lista->inicio->proximo == nullptr) {
         return;
@@ -200,48 +200,37 @@ void organizarHuffmanLista(Lista *lista) {
     // Percorre a lista, até zerar a lista (current == nullptr)
     while (current != nullptr) {
         nodeLista *next = current->proximo; // Armazena o próximo nó
-        // Insere current na lista ordenada
+        // Se a lista temporária está vazia ou a frequência do nó atual é maior ou igual ao nó no início da lista temporária
         if (novo_inicio == nullptr || novo_inicio->noArvore->frequencia >= current->noArvore->frequencia) {
             current->proximo = novo_inicio;
             novo_inicio = current;
+            // Coloca current antes do novo_inicio
         } else { 
+            // Se a frequência do nó atual é menor que o nó no início da lista temporária
             nodeLista *inicioAtual = novo_inicio;
+            // Percorre a lista temporária até encontrar o nó que tem frequência maior que o nó atual
             while (inicioAtual->proximo != nullptr && inicioAtual->proximo->noArvore->frequencia < current->noArvore->frequencia) {
                 inicioAtual = inicioAtual->proximo;
             }
+            // Coloca o nó atual na posição correta
             current->proximo = inicioAtual->proximo;
             inicioAtual->proximo = current;
+            // Coloca o current depois do inicioAtual
         }
+        // Atualiza o nó atual
         current = next;
     }
     lista->inicio = novo_inicio; // Atualiza o início da lista com a lista ordenada
-}
 
-nodeArvore *criarArvoreHuffman(Lista *lista) {
-    // Enquanto houver mais de um nó na lista
-    while (lista->inicio != nullptr && lista->inicio->proximo != nullptr) {
-        // Pega os dois nós de menor frequência
-        nodeArvore *esquerda = popMinLista(lista);
-        nodeArvore *direita = popMinLista(lista);
+    // Atualiza o início da lista com a lista ordenada
+    lista->inicio = novo_inicio;
 
-        // Verificar as frequências dos nós removidos
-        if (esquerda == nullptr || direita == nullptr) {
-            std::cout << "Erro: nós removidos são nulos!" << std::endl;
-            return nullptr;
-        }
-
-        // Cria um novo nó com a soma das frequências dos dois nós
-        nodeArvore *novo = novoNodeArvore(NULL, esquerda->frequencia + direita->frequencia, esquerda, direita);
-
-        // Cria um novo nó de lista com o nó criado
-        nodeLista *novo_nodeLista = novoNodeLista(novo);
-
-        // Insere o nó na lista
-        insereLista(lista, novo_nodeLista);
+    // Atualiza o fim da lista
+    nodeLista *temp = novo_inicio;
+    while (temp->proximo != nullptr) {
+        temp = temp->proximo;
     }
-
-    // Retorna o nó restante na lista
-    return popMinLista(lista);
+    lista->fim = temp;
 }
 
 void mostrarArvoreHuffman(nodeArvore *raiz, int profundidade=0) {
@@ -282,4 +271,45 @@ void tabelaHuffman(nodeArvore *raiz, std::string codigo="") {
 
     tabelaHuffman(raiz->esquerda, codigo + "0");
     tabelaHuffman(raiz->direita, codigo + "1");
+}
+
+nodeArvore *criarArvoreHuffman(Lista *lista) {
+    // Se houver somente um nó na lista
+    if (lista->inicio->proximo == nullptr) {
+        // Retorna o nó restante na lista
+        return popMinLista(lista);
+    }
+
+    // Enquanto houver mais de um nó na lista
+    // Pega os dois nós de menor frequência
+    nodeArvore *esquerda = popMinLista(lista);
+    nodeArvore *direita = popMinLista(lista);
+
+    // Cria um novo nó com a soma das frequências dos dois nós
+    nodeArvore *novo = novoNodeArvore(NULL, esquerda->frequencia + direita->frequencia, esquerda, direita);
+
+    // Cria um novo nó de lista com o nó criado
+    nodeLista *novo_nodeLista = novoNodeLista(novo);
+
+    // Insere o nó na lista
+    insereLista(lista, novo_nodeLista);
+
+    // Continua o processo até que reste somente um nó na lista
+    return criarArvoreHuffman(lista);
+}
+
+void liberarArvore(nodeArvore *raiz) {
+    // Verifica se é um nó valido
+    if (raiz == nullptr) {
+        return;
+    }
+
+    // Libera a memória da subárvore esquerda
+    liberarArvore(raiz->esquerda);
+
+    // Libera a memória da subárvore direita
+    liberarArvore(raiz->direita);
+
+    // Libera a memória do nó atual
+    delete raiz;
 }
